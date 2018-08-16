@@ -7,6 +7,9 @@
 #include <stdlib.h>
 #include <unistd.h>     // read  write
 #include <errno.h>      // errno
+#include <sys/socket.h> // recv, send
+#ifndef COMMON_LINE_H_
+#define COMMON_LINE_H_
 
 #define BUFFER_SIZE 1024
 #define SSIZE_T_SIZE 8
@@ -26,3 +29,18 @@ struct packet{
  */
 ssize_t writen(int fd, void * buffer, size_t count);
 ssize_t readn(int fd, void * buffer, size_t count);
+
+
+/*
+ * recv_peek函数, 偷窥
+ */
+ssize_t recv_peek(int sockfd, void *buf, size_t len);
+
+
+/*
+ * read_line函数, 使用recv_peek
+ */
+ssize_t read_line(int sockfd, void * buf, size_t max_count);
+
+
+#endif

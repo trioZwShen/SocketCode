@@ -22,6 +22,7 @@ ssize_t writen(int fd, void * buffer, size_t count){
     return count;
 }
 
+
 ssize_t readn(int fd, void * buffer, size_t count){
     ssize_t nleft = count;
     char * tmpBuff = (char *)buffer;
@@ -38,4 +39,49 @@ ssize_t readn(int fd, void * buffer, size_t count){
         tmpBuff += nread;
     }
     return count;
+}
+
+
+ssize_t recv_peek(int sockfd, void *buf, size_t len){
+    while(true){
+        int ret = recv(sockfd, buf, len, MSG_PEEK);
+        if (ret==-1 && errno == EINTR)              // errno为EINTR被中断时不认为是出错,继续recv
+            continue;
+        return ret;
+    }
+}
+
+
+ssize_t read_line(int sockfd, void * buf, size_t max_count){
+    size_t nleft = max_count;
+    char * tmpBuff = (char *)buf;
+    while(nleft>0){
+        ssize_t nread = recv_peek(sockfd, tmpBuff, nleft);  // peek
+        if (nread<=0){
+            return nread;
+        }
+
+        if (nread>nleft){
+            exit_own("read_line error");
+        }
+
+        for (int i=0; i<nread; ++i){                        // 检查是否偷窥到换行
+            if (tmpBuff[i]=='\n'){
+                ssize_t ret = readn(sockfd, tmpBuff, i+1);  // 利用readn将这一行读取
+                if(ret<i+1){
+                    exit_own("read_line error");
+                }
+                return ret;
+            }
+        }
+        
+        // 如果本次读取没有换行
+        nleft -= nread;
+        ssize_t ret = readn(sockfd, tmpBuff, nread);
+        if (ret<nread){
+            exit_own("read_line error");
+        }
+        tmpBuff += nread;
+    }
+    return -1;
 }
