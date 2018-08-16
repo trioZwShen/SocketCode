@@ -31,20 +31,28 @@ int main()
     if(connect(fd, (struct sockaddr*)&svr_addr, sizeof(svr_addr))==-1){
         exit_own("connext failed");
     }
+    struct sockaddr_in local_addr;
+    socklen_t addr_len = sizeof(local_addr);
+    if (getsockname(fd, (struct sockaddr*)&local_addr, &addr_len)<0){
+        exit_own("getsockname failed");
+    }
+    printf("local addr %s: %d\n", inet_ntoa(local_addr.sin_addr),ntohs(local_addr.sin_port));
 
     char buff[BUFFER_SIZE];
     while(true){
         memset(buff, 0, BUFFER_SIZE);
         int count = read(STDIN_FILENO, buff, BUFFER_SIZE);
-        
-        write(fd, buff, count);
-        if (0==strncmp(buff, "exit", 4)){
-            printf("disconnet\n");
+        writen(fd, buff, count);
+
+        memset(buff, 0, BUFFER_SIZE);
+        count = read_line(fd, buff, BUFFER_SIZE);
+        if (count==-1){
+            exit_own("read_line error");
+        }else if(count==0){
+            printf("server close\n");
             break;
         }
-        memset(buff, 0, BUFFER_SIZE);
-        count = read(fd, buff, BUFFER_SIZE);
-        printf("echo ");
+        write(STDOUT_FILENO, "echo ", 5);
         write(STDOUT_FILENO, buff, count);
     }
     close(fd);

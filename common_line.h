@@ -8,6 +8,11 @@
 #include <unistd.h>     // read  write
 #include <errno.h>      // errno
 #include <sys/socket.h> // recv, send
+#include <netdb.h>      // gethostname, gethostbyname
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <string.h>
+
 #ifndef COMMON_LINE_H_
 #define COMMON_LINE_H_
 
@@ -41,6 +46,12 @@ ssize_t recv_peek(int sockfd, void *buf, size_t len);
  * read_line函数, 使用recv_peek
  */
 ssize_t read_line(int sockfd, void * buf, size_t max_count);
+
+
+/*
+ * get_localip函数, 返回本机默认ip
+ */
+int get_localip(char * ip);
 
 
 #endif

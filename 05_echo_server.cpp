@@ -19,10 +19,10 @@ void do_process(int fd, struct sockaddr_in& client_addr){
             printf("client %s: %d disconnect\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
             break;
         }else if(count<0){
-            exit_own("read error");
+            exit_own("read_line error");
         }
         write(STDOUT_FILENO, buff, count);
-        write(fd, buff, count);
+        writen(fd, buff, strlen(buff));
     }
 }
 

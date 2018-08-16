@@ -85,3 +85,18 @@ ssize_t read_line(int sockfd, void * buf, size_t max_count){
     }
     return -1;
 }
+
+int get_localip(char * ip){
+    char host[100] = {0};
+    if (gethostname(host, sizeof(host))<0){
+        return -1;
+    }
+
+    struct hostent *hp;
+    if ((hp=gethostbyname(host))==NULL){
+        return -1;
+    }
+
+    strcpy(ip, inet_ntoa(*(struct in_addr *)hp->h_addr_list[0]));       // 这个列表中的第一条就是本机的默认ip
+    return 0;
+}
