@@ -8,6 +8,7 @@
 #include <sys/socket.h>     // socket函数
 #include <unistd.h>
 #include <string.h>         // 字符串处理函数
+#include <sys/wait.h>       // wait函数
 #include "common_line.h"
 
 void do_process(int fd, struct sockaddr_in& client_addr){
@@ -26,8 +27,19 @@ void do_process(int fd, struct sockaddr_in& client_addr){
     }
 }
 
+void handle_sigchld(int sig){
+    // -1 表示处理全部的子进程, NULL表示不关注退出状态, WNOHANG表示不挂起
+    while(waitpid(-1, NULL, WNOHANG)>0)
+        continue;
+}
+
 int main()
 {
+    // signal attach
+    // signal(SIGCHLD, SIG_IGN);
+    signal(SIGCHLD, handle_sigchld);
+
+
     // 创建监听套接字
     int listen_fd = socket(PF_INET, SOCK_STREAM, 0);
     if (listen_fd == -1){
@@ -71,7 +83,9 @@ int main()
             exit_own("fork failed");
         }else if (pid==0){          // 子进程通信
             close(listen_fd);
+            
             do_process(fd, client_addr);
+            
             exit(0);
         }else{                      // 父进程监听
             close(fd);

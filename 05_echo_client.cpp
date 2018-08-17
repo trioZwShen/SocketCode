@@ -10,6 +10,27 @@
 #include <string.h>
 #include "common_line.h"
 
+void do_client(int fd){
+    char buff[BUFFER_SIZE];
+    while(true){
+        memset(buff, 0, BUFFER_SIZE);
+        int count = read(STDIN_FILENO, buff, BUFFER_SIZE);
+        writen(fd, buff, count);
+
+        memset(buff, 0, BUFFER_SIZE);
+        count = read_line(fd, buff, BUFFER_SIZE);
+        if (count==-1){
+            exit_own("read_line error");
+        }else if(count==0){
+            printf("server close\n");
+            break;
+        }
+        write(STDOUT_FILENO, "echo ", 5);
+        write(STDOUT_FILENO, buff, count);
+    }
+    close(fd);
+}
+
 int main()
 {
     // 创建套接字
@@ -37,25 +58,8 @@ int main()
         exit_own("getsockname failed");
     }
     printf("local addr %s: %d\n", inet_ntoa(local_addr.sin_addr),ntohs(local_addr.sin_port));
-
-    char buff[BUFFER_SIZE];
-    while(true){
-        memset(buff, 0, BUFFER_SIZE);
-        int count = read(STDIN_FILENO, buff, BUFFER_SIZE);
-        writen(fd, buff, count);
-
-        memset(buff, 0, BUFFER_SIZE);
-        count = read_line(fd, buff, BUFFER_SIZE);
-        if (count==-1){
-            exit_own("read_line error");
-        }else if(count==0){
-            printf("server close\n");
-            break;
-        }
-        write(STDOUT_FILENO, "echo ", 5);
-        write(STDOUT_FILENO, buff, count);
-    }
-    close(fd);
+    
+    do_client(fd);
+    
     return 0;
 }
-

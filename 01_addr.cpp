@@ -18,7 +18,7 @@ int main()
     unsigned int net_x = htonl(x);
     p = (unsigned char *)&net_x;
     printf("网络字节序: 0x%x, 0x%x, 0x%x, 0x%x\n", *p, *(p+1), *(p+2), *(p+3));
-    
+
     // 地址转换函数
     char ip[]="192.168.1.1";
     struct in_addr netIp;
@@ -28,7 +28,7 @@ int main()
         exit(-1);
     }
     printf("地址转换函数测试1: %s\n", inet_ntoa(netIp));
-    
+ 
     unsigned int tmp = inet_addr(ip);
     netIp.s_addr = tmp;
     printf("地址转换函数测试2: %s\n", inet_ntoa(netIp));
