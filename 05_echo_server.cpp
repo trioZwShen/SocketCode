@@ -18,6 +18,7 @@ void do_process(int fd, struct sockaddr_in& client_addr){
         int count = read_line(fd, buff, BUFFER_SIZE);
         if (count==0){
             printf("client %s: %d disconnect\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
+            close(fd);
             break;
         }else if(count<0){
             exit_own("read_line error");
