@@ -1,5 +1,5 @@
 /*
- * 回射模型-服务端-使用select单进程来处理并发
+ * 回射模型-服务端-测试shutdown函数
  */
 
 #include <stdio.h>
@@ -22,6 +22,7 @@ int main()
 {
     // signal attach
     signal(SIGCHLD, handle_sigchld);
+    signal(SIGPIPE, SIG_IGN);
 
     // 创建监听套接字
     int listen_fd = socket(PF_INET, SOCK_STREAM, 0);
@@ -118,9 +119,11 @@ int main()
                     close(talk_fdVec[i]);
                     talk_fdVec[i] = -1;
                 }else{
+
                     printf("%s: %u ", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
                     fflush(stdout);
                     writen(STDOUT_FILENO, buff, ret);
+                    sleep(5);
                     writen(talk_fdVec[i], buff, ret);
                 }
                 if (--ready_num<=0){
