@@ -12,6 +12,8 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <string.h>
+#include <fcntl.h>      // fcntl
+
 
 #ifndef COMMON_LINE_H_
 #define COMMON_LINE_H_
@@ -53,5 +55,50 @@ ssize_t read_line(int sockfd, void * buf, size_t max_count);
  */
 int get_localip(char * ip);
 
+
+
+/*
+ * 超时函数的封装, is_read_timeout, is_write_timeout, accept_timeout, connect_timeout
+ */
+
+/**
+ *  判断读,写是否会超时
+ *  不包含读写操作
+ *  参数: fd文件描述符, timeout超时时间, 如果timeout==0, 表示不设置超时时间
+ *  返回值: 返回0表示不超时, 返回-1 && errno == ETIMEDOUT 表示超时
+ *          返回-1 && errno!=ETIMEDOUT 表示出错
+ */
+int is_read_timeout(int fd, unsigned timeout=0);
+int is_write_timeout(int fd, unsigned timeout=0);
+
+
+/**
+ *  判断accept是否超时, 并执行accept
+ *  参数: 
+ *  @socket     : 套接字
+ *  @address    : 客户端的地址
+ *  @address_len: 地址长度
+ *  @timeout    : 等待时长
+ *  返回值: -1 && errno == ETIMEDOUT 表示超时
+ *          -1 && errno != ETIMEDOUT 表示其他错误
+ *          >=0 表示已连接套接字
+ */
+int accept_timeout(int socket, struct sockaddr * address, 
+        socklen_t * address_len, unsigned timeout = 0);
+
+
+/**
+ *  设置文件描述符为阻塞/非阻塞
+ */
+void set_block(int fd, bool block = true);
+
+
+/**
+ *  connect_timeout
+ *  如果connect能够连接上, 那么将会返回0
+ *  如果connect超时还未连接上, 那么将会返回-1, 并设置errno为ETIMEDOUT
+ *  如果connect出错, 那么将会返回-1
+ */
+int connect_timeout(int socket, const struct sockaddr *address, socklen_t address_len, unsigned timeout = 0);
 
 #endif
