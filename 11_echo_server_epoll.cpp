@@ -51,7 +51,7 @@ int main()
 
     // create a listen event
     struct epoll_event listen_event;
-    listen_event.events = EPOLLOUT | EPOLLET;
+    listen_event.events = EPOLLIN | EPOLLET;
     listen_event.data.fd = listen_fd;
 
     // attach care fd to epollfd
@@ -61,10 +61,10 @@ int main()
     }
 
     // create a event vector
-    std::vector<epoll_event*> eventVec(16);
+    std::vector<epoll_event> eventVec(16);
 
     while(true){
-        int event_count = epoll_wait(epollfd, &*eventVec, static_cast<int>(eventVec.size()), -1);
+        int event_count = epoll_wait(epollfd, &*eventVec.begin(), static_cast<int>(eventVec.size()), -1);
         if (event_count<0){
             if (errno ==EINTR){
                 continue;
@@ -92,32 +92,32 @@ int main()
                 // set nonblock and attach event
                 set_block(conn, false);
                 struct epoll_event accepted_event;
-                accepted_event.events = EPOLLOUT & EPOLLET;
+                accepted_event.events = EPOLLIN | EPOLLET;
                 accepted_event.data.fd = conn;
                 ret = epoll_ctl(epollfd, EPOLL_CTL_ADD, conn, &accepted_event);
                 if (ret<0){
                     exit_own("epoll_ctl add failed");
                 }
-
+             
             // accepted fd prepare
-            }else if(eventVec[i].events & EPOLLOUT){
+            }else if(eventVec[i].events & EPOLLIN){
                 int conn = eventVec[i].data.fd;
                 if (conn<0)
                     continue;
-                char buff[BUFFER_SIZE];
+                char buff[BUFFER_SIZE]={0};
                 ret = read_line(conn, buff, BUFFER_SIZE);
                 if (ret<0){
                     exit_own("read_line failed");
                 }
                 if (ret==0){
                     printf("client closed\n");
-                    epoll_ctl(epollfd, conn, EPOLL_CTL_DEL, conn, &eventVec[i]);
+                    epoll_ctl(epollfd, EPOLL_CTL_DEL, conn, &eventVec[i]);
                     close(conn);
                     continue;
                 }
-                
+                int filefd = fileno(stdout);   
                 // put to stdout
-                write(STDOUT_FILENO, buff, ret);
+                write(filefd, buff, ret);
                 // echo
                 writen(conn, buff, ret);
             }
