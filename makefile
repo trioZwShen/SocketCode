@@ -1,7 +1,7 @@
 all:
 	g++ -g common_line.cpp -c -o common_line.o
-	g++ -g 06_echo_client_select.cpp -c -o echo_client.o
-	g++ -g 11_echo_server_epoll.cpp -c -o echo_server.o
+	g++ -g 12_echo_client_udp.cpp -c -o echo_client.o
+	g++ -g 12_echo_server_udp.cpp -c -o echo_server.o
 	g++ -g common_line.o echo_client.o -o echo_client.exe
 	g++ -g common_line.o echo_server.o -o echo_server.exe
 
