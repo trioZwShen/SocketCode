@@ -250,9 +250,9 @@ int connect_timeout(int socket, const struct sockaddr *address, socklen_t addres
 
             if(err!=0){
                 errno = err;
-                return -1;
+                ret = -1;
             }else{          // 不是因为出现待处理错误引起的
-                return 0;
+                ret = 0;
             }
         }
     }
